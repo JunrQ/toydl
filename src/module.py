@@ -14,7 +14,17 @@ class Module(ModuleBase):
 
 
 
-  def __repr__(self)
+  def __repr__(self):
+
+
+
+
+  def forward(self, *args, **kwargs):
+
+
+
+
+  def backward(self, output_grad=None):
 
 
 

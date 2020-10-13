@@ -17,8 +17,11 @@ class Optimizer(OptimizerBase):
     self._parameters = parameters
     self._base_lr = lr
 
-  def step(self):
+  def _step(self):
     raise NotImplementedError()
+
+  def step(self):
+    self._step()
 
   def zero_grad(self):
     for param in self._parameters:
@@ -32,7 +35,6 @@ class SGD(Optimizer):
   def __init__(self, parameters, lr):
     super(SGD, self).__init__(parameters, lr)
 
-  def step(self):
+  def _step(self):
     for param in self._parameters:
-      param.__add__(-self._base_lr * param.grad)
-
+      param.add(-self._base_lr * param.grad)
