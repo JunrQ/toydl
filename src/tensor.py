@@ -1,5 +1,14 @@
 
+"""
+Tensor should compose a graph as a node.
 
+In order to build the graph, we should give every tensor a
+index as a representation whenever being built.
+
+And to achieve that, we need reimplement its `__init__` or
+`__new__` function.
+
+"""
 
 class Node(object):
   def __init__(self, value, inputs):

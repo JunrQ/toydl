@@ -26,6 +26,16 @@ class Linear(Module):
     else:
       return x
 
+  def backward(self, grad):
+
+    self.W.grad = 
+
+    if self.b:
+      self.b.grad = 
+
+    input_grad = 
+
+    return input_grad
 
 
 # class Add(Module):
