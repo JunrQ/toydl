@@ -9,14 +9,22 @@ from .tensor import Tensor
 
 class NumpyTensor(Tensor):
 
-  def __init__(self, name, inputs=[], outputs=[],
-               shape=None, init_value=None):
+  def __init__(self, name, inputs=[], shape=None, init_value=None):
     """
 
     Parameters
     ----------
+    name : str
+
+    inputs : list of `Tensor`
+
+    shape : 
+
+
+    init_value : 
 
     """
+    super(NumpyTensor, self).__init__(name=name, inputs=inputs)
     assert shape is not None or init_value is not None
 
     if shape is not None:
@@ -62,6 +70,9 @@ class NumpyTensor(Tensor):
 
   def __add__(self, other):
     return self.add(other)
+  
+  def __equal__(self, other):
+    
 
   def matmul(self, other):
   
