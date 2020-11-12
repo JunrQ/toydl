@@ -1,16 +1,25 @@
+import sys
+sys.path.insert(0, '../../')
+
 import logging
 import argparse
 import shutil
+import time
+import os
+import numpy as np
+
+from torchvision import datasets
 
 
 from toydl.linear import Linear, ReLU
 from toydl.loss import MSELoss
 from toydl.optimizer import SGD
-from toydl.dataset import MNIST
+from toydl.utils import batch_wrapper
+from toydl.tensor import NumpyTensor
 
 
 parser = argparse.ArgumentParser(description='Toydl MNIST')
-parser.add_argument('--dir', type=str, help='Save directory')
+parser.add_argument('--dir', type=str, default='./log', help='Save directory')
 args = parser.parse_args()
 
 save_dir = args.dir
@@ -39,17 +48,11 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 
-max_epoch = 50
-batch_size = 16
-log_frequence = 10
-# eval_frequence = 20
-
-
 class Trainer(object):
   def __init__(self, num_classes=10, lr=0.1, logger=logging):
     self.logger = logger
 
-    self.l1 = Linear(28*28, 256)
+    self.l1 = Linear(28*28, 256, is_input_layer=True)
     self.a1 = ReLU()
     self.l2 = Linear(256, 128)
     self.a2 = ReLU()
@@ -76,6 +79,7 @@ class Trainer(object):
   def forward(self, x):
     for l in self.layers:
       x = l(x)
+    return x
 
   def backward(self, x, y):
     self.loss_value = self.loss(x, y)
@@ -93,6 +97,9 @@ class Trainer(object):
     steps = 0
     for epoch in range(kwargs['max_epoch']):
       for x, y in dataset:
+        x = NumpyTensor(x)
+        y = NumpyTensor(y)
+
         pred = self.forward(x)
         self.backward(pred, y)
         self.update()
@@ -102,6 +109,20 @@ class Trainer(object):
         if steps % kwargs['log_frequence'] == 0:
           loss_value = self.loss_value
           acc_value = (pred == y).mean()
-          self.logger.info("[Train] Loss: %.3f | Acc: %.3f" % 
-                           (loss_value, acc_value))
+          self.logger.info("[Train] [Epoch]%d [Steps]%d | Loss: %.3f | Acc: %.3f" % 
+                           (epoch, steps, loss_value, acc_value))
+
+
+if __name__ == '__main__':
+  trainer = Trainer(num_classes=10, lr=0.01, logger=logger)
+  params = {
+    'max_epoch' : 50,
+    'batch_size' : 16,
+    'log_frequence' : 10
+  }
+  dataset = datasets.MNIST('../data', train=True, download=True)
+  dataset = batch_wrapper(dataset, batch_size=params['batch_size'],
+                          transform=lambda x : ((np.asarray(x) - 255 * 0.1307) / (255 * 0.3081)).flatten(),
+                          shuffle=True)
+  trainer.run(dataset, **params)
 

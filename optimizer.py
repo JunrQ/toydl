@@ -37,8 +37,10 @@ class Optimizer(OptimizerBase):
 class SGD(Optimizer):
   """Implements stochastic gradient descent.
   """
-  def __init__(self, parameters, lr):
-    super(SGD, self).__init__(parameters, lr)
+  def __init__(self, parameters, lr, scheduler=None,
+               weight_decay=0):
+    super(SGD, self).__init__(parameters, lr,
+                              scheduler=scheduler, weight_decay=weight_decay)
 
   def _step(self):
     if self.scheduler is not None:

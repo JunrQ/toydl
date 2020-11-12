@@ -1,5 +1,6 @@
 
-from module import Module
+from toydl.module import Module
+from toydl.tensor import NumpyTensor
 
 
 class Linear(Module):
@@ -12,8 +13,8 @@ class Linear(Module):
     self.bias = bias
     self.is_input_layer = is_input_layer
 
-    self.W = TensorType((out_features, in_features))
-    self.b = TensorType((output_fature, )) if bias else None
+    self.W = NumpyTensor(shape=(out_features, in_features))
+    self.b = NumpyTensor(shape=(out_features, )) if bias else None
 
   def parameters(self):
     res = [self.W]
@@ -23,8 +24,8 @@ class Linear(Module):
 
   def forward(self, x):
     assert len(x.shape) == 2
-    assert x.shape[1] = self.in_features
-    x = W.matmul(self.x.transpose()) # o, b
+    assert x.shape[1] == self.in_features
+    x = self.W.matmul(x.transpose()) # o, b
     self._X = x
     x = x.transpose()
     if self.bias:
@@ -33,7 +34,7 @@ class Linear(Module):
       return x
 
   def backward(self, grad):
-    self.W.grad = grad.transpose().matmul(self._X)
+    self.W.grad = grad.data.transpose().matmul(self._X.data)
     if self.b:
       self.b.grad = grad.sum(dim=1)
     if self.is_input_layer:
@@ -56,4 +57,3 @@ class ReLU(Module):
 
   def backward(self, grad):
     return grad * self.m
-

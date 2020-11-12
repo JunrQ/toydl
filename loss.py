@@ -1,8 +1,9 @@
 
-from module import Module
+from toydl.module import Module
 
 
 class BaseLoss(Module):
+  """Base class for Loss"""
 
 
 class MSELoss(BaseLoss):
@@ -16,3 +17,12 @@ class MSELoss(BaseLoss):
     pred_grad = -self._diff
     gt_grad = self._diff
     return pred_grad, gt_grad
+
+
+class CrossEntropyLoss(BaseLoss):
+  def forward(self, pred, logit):
+
+
+
+  def backward(self):
+    
