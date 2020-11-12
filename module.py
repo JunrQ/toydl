@@ -1,7 +1,3 @@
-
-
-# from toydl.utils import parse_tensors
-
 class ModuleBase(object):
   """Base Class for Module."""
 
