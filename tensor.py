@@ -1,6 +1,7 @@
 
 
 import numpy as np
+from scipy.special import softmax as sci_softmax
 
 
 class Tensor(object):
@@ -53,11 +54,28 @@ class NumpyTensor(Tensor):
       if init_value is not None:
         init_value = np.ones(shape) * init_value
       else:
-        init_value = np.random.rand(*shape)
+        init_value = np.random.normal(0.0, 0.1, size=shape)
  
     self._array = init_value
     self._shape = init_value.shape
     self._grad = np.zeros_like(init_value)
+
+  def __repr__(self):
+    return str(self._array)
+
+  def __str__(self):
+    return self.__repr__()
+
+  def __getitem__(self, indexs):
+    raise NotImplementedError()
+
+  def log(self, eps=1e-8):
+    a = np.log(self.data + eps)
+    return NumpyTensor(a)
+
+  def mean(self, axis=None):
+    m = np.mean(self.data, axis=axis)
+    return m
 
   def zero_grad(self):
     self._grad.fill(0)
@@ -112,14 +130,21 @@ class NumpyTensor(Tensor):
   def __mul__(self, other):
     return NumpyTensor(array=self.data * other.data)
 
+  def __rmul__(self, other):
+    return self.__mul__(other)
+
   @_wrapper_scalar(ScalarTensor)
-  def __equal__(self, other):
-    return NumpyTensor(self.data == other.data)
+  def __eq__(self, other):
+    return NumpyTensor(
+      np.equal(self.data, other.data).astype(np.float))
 
   @_wrapper_scalar(ScalarTensor)
   def matmul(self, other):
     a = np.matmul(self.data, other.data)
     return NumpyTensor(a)
+
+  def argmax(self, axis):
+    return NumpyTensor(np.argmax(self.data, axis=axis))
 
   @_wrapper_scalar(ScalarTensor)
   def matmul_(self, other):
@@ -156,6 +181,10 @@ class NumpyTensor(Tensor):
     a = self._array > v.data
     return NumpyTensor(a)
 
+  def softmax(self, axis):
+    a = sci_softmax(self.data, axis)
+    return NumpyTensor(a)
+
   def reshape(self, shape):
     a = np.reshape(self._array, shape)
     return NumpyTensor(a)
@@ -176,3 +205,8 @@ class NumpyTensor(Tensor):
   @property
   def shape(self):
     return self._shape
+
+  @classmethod
+  def zeros(self, shape):
+    a = np.zeros(shape)
+    return NumpyTensor(a)

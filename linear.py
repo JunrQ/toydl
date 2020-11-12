@@ -14,7 +14,7 @@ class Linear(Module):
     self.is_input_layer = is_input_layer
 
     self.W = NumpyTensor(shape=(out_features, in_features))
-    self.b = NumpyTensor(shape=(out_features, )) if bias else None
+    self.b = NumpyTensor(shape=(out_features, ), init_value=0.01) if bias else None
 
   def parameters(self):
     res = [self.W]
@@ -25,27 +25,30 @@ class Linear(Module):
   def forward(self, x):
     assert len(x.shape) == 2
     assert x.shape[1] == self.in_features
-    x = self.W.matmul(x.transpose()) # o, b
     self._X = x
-    x = x.transpose()
+    x = self.W.matmul(x.transpose()) # (o, i) (i, b) -> (o, b)
+    x = x.transpose() # (b, o)
     if self.bias:
       return x + self.b.reshape((1, -1))
     else:
       return x
 
   def backward(self, grad):
-    self.W.grad = grad.data.transpose().matmul(self._X.data)
+    # grad : (b, o)
+    self.W.grad = grad.transpose().matmul(self._X).data # (o, b) (b, i)
     if self.b:
-      self.b.grad = grad.sum(dim=1)
+      self.b.grad = grad.data.sum(axis=0)
     if self.is_input_layer:
       return
-    input_grad = self.W.transpose().matmul(grad.transpose())
+    # (i, o) (o, b) -> (i, b) -> (b, i)
+    input_grad = self.W.transpose().matmul(grad.transpose()).transpose()
     return input_grad
 
 
 class Add(Module):
   def forward(self, a, b):
     return a + b
+
   def backward(self, grad):
     return grad, grad
 

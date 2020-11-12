@@ -10,9 +10,8 @@ import numpy as np
 
 from torchvision import datasets
 
-
 from toydl.linear import Linear, ReLU
-from toydl.loss import MSELoss
+from toydl.loss import CrossEntropyLoss
 from toydl.optimizer import SGD
 from toydl.utils import batch_wrapper
 from toydl.tensor import NumpyTensor
@@ -21,9 +20,7 @@ from toydl.tensor import NumpyTensor
 parser = argparse.ArgumentParser(description='Toydl MNIST')
 parser.add_argument('--dir', type=str, default='./log', help='Save directory')
 args = parser.parse_args()
-
 save_dir = args.dir
-
 
 msg = []
 logger = logging.getLogger('toydl-mnist')
@@ -67,14 +64,14 @@ class Trainer(object):
                    self.l3, self.a3,
                    self.l4, self.a4,
                    self.l5]
-    self.loss = MSELoss()
+    self.loss = CrossEntropyLoss()
 
     params = []
     for l in self.layers:
       params += l.parameters()
     self.optimizer = SGD(params, lr=lr,
-                         scheduler=lambda b, s: 0.9**s * b,
-                         weight_decay=1e-4)
+                         # scheduler=lambda b, s: 0.9**s * b,
+                         weight_decay=0)
 
   def forward(self, x):
     for l in self.layers:
@@ -93,36 +90,35 @@ class Trainer(object):
     self.optimizer.zero_grad()
 
   def run(self, dataset, **kwargs):
-
     steps = 0
-    for epoch in range(kwargs['max_epoch']):
-      for x, y in dataset:
-        x = NumpyTensor(x)
-        y = NumpyTensor(y)
+    for x, y in dataset:
+      x = NumpyTensor(x)
+      y = NumpyTensor(y)
 
-        pred = self.forward(x)
-        self.backward(pred, y)
-        self.update()
-
-        steps += 1
-
-        if steps % kwargs['log_frequence'] == 0:
-          loss_value = self.loss_value
-          acc_value = (pred == y).mean()
-          self.logger.info("[Train] [Epoch]%d [Steps]%d | Loss: %.3f | Acc: %.3f" % 
-                           (epoch, steps, loss_value, acc_value))
+      logit = self.forward(x)
+      self.backward(logit, y)
+      self.update()
+      steps += 1
+      if steps % kwargs['log_frequence'] == 0:
+        loss_value = self.loss_value
+        pred = logit.argmax(axis=1)
+        acc_value = (pred == y).mean()
+        self.logger.info("[Train] [Steps] %d | Loss: %.3f | Acc: %.3f" % 
+                          (steps, loss_value, acc_value))
+      
+      if steps >= kwargs['max_steps']:
+        break
 
 
 if __name__ == '__main__':
-  trainer = Trainer(num_classes=10, lr=0.01, logger=logger)
+  trainer = Trainer(num_classes=10, lr=0.0001, logger=logger)
   params = {
-    'max_epoch' : 50,
-    'batch_size' : 16,
-    'log_frequence' : 10
+    'max_steps' : 30000,
+    'batch_size' : 32,
+    'log_frequence' : 50
   }
   dataset = datasets.MNIST('../data', train=True, download=True)
   dataset = batch_wrapper(dataset, batch_size=params['batch_size'],
-                          transform=lambda x : ((np.asarray(x) - 255 * 0.1307) / (255 * 0.3081)).flatten(),
+                          transform=lambda x : ((np.asarray(x) - 127.5) / 127.5).flatten(),
                           shuffle=True)
   trainer.run(dataset, **params)
-

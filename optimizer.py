@@ -48,4 +48,4 @@ class SGD(Optimizer):
     else:
       lr = self._base_lr
     for param in self._parameters:
-      param.add(-lr * (param.grad + self.wd * param))
+      param.sub_(lr * (param.grad + self.wd * param.data))
