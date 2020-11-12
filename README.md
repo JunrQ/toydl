@@ -16,3 +16,21 @@ The architecture is simple and straightforward. `tensor.py` implement the base t
 ## Demo
 
 There is a demo which use a MLP to train MNIST and I upload the log file I got for reference.
+
+To run the demo by yourself, just run following code
+
+```shell
+# First cd into the test directory
+cd test
+
+# Then just run it
+python test_mlp.py
+```
+
+## Future work
+
+Implementing your own deep learning framework is actully an excited thing. If I have more time in the future which i doubt there are several things I want to do:
+
+* Define a graph that manage all the layers
+* Define a engine that runs the graph which supports optimization
+* Add more operators
