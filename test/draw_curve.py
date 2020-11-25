@@ -1,4 +1,4 @@
-
+import numpy as np
 import matplotlib.pyplot as plt
 
 def parse_log(path):
@@ -16,10 +16,14 @@ def parse_log(path):
   return steps, losses
 
 
+def moving_average(x, w):
+    return np.convolve(x, np.ones(w), 'valid') / w
+
+
 if __name__ == '__main__':
   steps, losses = parse_log('./log/log.log')
-
-  plt.scatter(steps, losses)
+  losses = moving_average(losses, 8)
+  plt.plot(steps[:len(losses)], losses)
 
   plt.xlabel("Step")
   plt.ylabel("Loss")

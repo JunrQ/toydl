@@ -1,8 +1,5 @@
-
-
 import numpy as np
 from scipy.special import softmax as sci_softmax
-
 
 class Tensor(object):
   """Base class for Tensor"""
@@ -40,11 +37,9 @@ class NumpyTensor(Tensor):
   def __init__(self, array=None,
                shape=None,
                init_value=None):
-    """
-
+    """Tensor use Numpy as backend.
     """
     super(NumpyTensor, self).__init__()
-
     if array is not None:
       assert shape is None
       init_value = array

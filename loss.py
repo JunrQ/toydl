@@ -1,4 +1,3 @@
-
 from toydl.module import Module
 from toydl.tensor import NumpyTensor
 
