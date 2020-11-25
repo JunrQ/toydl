@@ -1,10 +1,8 @@
-
 from .tensor import Tensor
 
 
 class OptimizerBase(object):
   """Base class for Optimizer."""
-
 
 class Optimizer(OptimizerBase):
   """Optimizer class.
